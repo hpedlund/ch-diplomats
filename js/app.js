@@ -6,8 +6,6 @@
   const statusInput = document.getElementById('status-input');
   const codeInput = document.getElementById('code-input');
   const codeLabel = document.getElementById('code-label');
-  const statusHint = document.getElementById('status-hint');
-  const codeHint = document.getElementById('code-hint');
   const searchForm = document.getElementById('search-form');
   const preview = document.getElementById('plate-text');
   const resultSection = document.getElementById('result-section');
@@ -31,24 +29,6 @@
     return corps === 'IO' ? 'Organisation code' : 'Country code';
   }
 
-  function getCodeHint(corps) {
-    return corps === 'IO'
-      ? `Valid organisation codes: 1-${Object.keys(IO_CODES).length}.`
-      : `Valid country codes: 1-${Object.keys(COUNTRY_CODES).length}.`;
-  }
-
-  function getStatusHint(corps) {
-    const statuses = Object.keys(STATUS_CODES[corps] || {}).map(Number).sort(function (a, b) {
-      return a - b;
-    });
-
-    if (!statuses.length) {
-      return 'Enter any positive status number.';
-    }
-
-    return `Common codes: ${statuses.join(', ')}. Higher staff numbers are allowed.`;
-  }
-
   function getStatusLabel(corps, status) {
     return (STATUS_CODES[corps] || {})[status] || `Status code ${status}`;
   }
@@ -59,8 +39,6 @@
 
     codeLabel.textContent = codeType;
     codeInput.placeholder = corps === 'IO' ? 'e.g. 3' : 'e.g. 15';
-    statusHint.textContent = getStatusHint(corps);
-    codeHint.textContent = getCodeHint(corps);
   }
 
   function updatePreview() {
