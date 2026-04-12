@@ -171,9 +171,10 @@ main {
 }
 
 .field-group {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto minmax(0, auto) 1.2rem;
   gap: .45rem;
+  align-content: start;
 }
 
 .field-group label {
@@ -207,6 +208,10 @@ main {
   min-height: 1.2rem;
   font-size: .85rem;
   color: var(--grey);
+}
+
+.field-hint-placeholder {
+  visibility: hidden;
 }
 
 .search-form button {
