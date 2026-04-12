@@ -30,6 +30,14 @@
   }
 
   function getStatusLabel(corps, status) {
+    if (corps === 'CD') {
+      if (status >= 1 && status <= 5) return 'Ambassador';
+      if (status >= 6 && status <= 9) return 'Minister or Counsellor';
+      if (status >= 10 && status <= 12) return 'First Secretary';
+      if (status >= 13 && status <= 15) return 'Second Secretary';
+      if (status >= 16) return 'Diplomatic Staff';
+    }
+
     return (STATUS_CODES[corps] || {})[status] || `Status code ${status}`;
   }
 
