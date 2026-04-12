@@ -39,6 +39,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 /* ── Header ───────────────────────────────────────────────────────────────── */
@@ -159,7 +160,12 @@ main {
 
 .search-grid {
   display: grid;
-  grid-template-columns: 72px 82px minmax(90px, 1fr) minmax(110px, 1fr);
+  width: 100%;
+  grid-template-columns:
+    minmax(0, 0.8fr)
+    minmax(0, 0.9fr)
+    minmax(0, 1fr)
+    minmax(0, 1.15fr);
   gap: .75rem;
   align-items: end;
 }
@@ -168,6 +174,7 @@ main {
   display: flex;
   flex-direction: column;
   gap: .45rem;
+  min-width: 0;
 }
 
 .field-group label {
@@ -393,18 +400,22 @@ footer p + p { margin-top: .3rem; }
   header h1 { font-size: 1.4rem; }
 
   .search-grid {
-    grid-template-columns: 56px 64px minmax(72px, 1fr) minmax(88px, 1fr);
-    gap: .45rem;
+    grid-template-columns:
+      minmax(0, 0.8fr)
+      minmax(0, 0.9fr)
+      minmax(0, 1fr)
+      minmax(0, 1.15fr);
+    gap: .35rem;
   }
 
   .field-group label {
-    font-size: .75rem;
+    font-size: .72rem;
   }
 
   .field-group input,
   .field-group select {
-    padding: .6rem .45rem;
-    font-size: .9rem;
+    padding: .55rem .35rem;
+    font-size: 1rem;
     letter-spacing: 0;
   }
 
