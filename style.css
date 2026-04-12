@@ -150,12 +150,6 @@ main {
   user-select: none;
 }
 
-.search-intro {
-  margin-bottom: 1rem;
-  color: var(--grey);
-  line-height: 1.5;
-}
-
 /* ── Search form ──────────────────────────────────────────────────────────── */
 .search-form {
   display: flex;
