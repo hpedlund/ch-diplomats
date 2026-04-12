@@ -150,14 +150,39 @@ main {
   user-select: none;
 }
 
-/* ── Search box ───────────────────────────────────────────────────────────── */
-.search-box {
-  display: flex;
-  gap: .5rem;
+.search-intro {
+  margin-bottom: 1rem;
+  color: var(--grey);
+  line-height: 1.5;
 }
 
-.search-box input {
-  flex: 1;
+/* ── Search form ──────────────────────────────────────────────────────────── */
+.search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.search-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: .45rem;
+}
+
+.field-group label {
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.field-group input,
+.field-group select {
   padding: .75rem 1rem;
   font-size: 1.1rem;
   font-family: 'Courier New', monospace;
@@ -167,13 +192,21 @@ main {
   border-radius: var(--radius);
   outline: none;
   transition: border-color .2s;
+  background: var(--white);
 }
 
-.search-box input:focus {
+.field-group input:focus,
+.field-group select:focus {
   border-color: var(--red);
 }
 
-.search-box button {
+.field-hint {
+  min-height: 1.2rem;
+  font-size: .85rem;
+  color: var(--grey);
+}
+
+.search-form button {
   padding: .75rem 1.4rem;
   background: var(--red);
   color: var(--white);
@@ -184,10 +217,11 @@ main {
   cursor: pointer;
   transition: background .2s, transform .1s;
   white-space: nowrap;
+  align-self: flex-start;
 }
 
-.search-box button:hover  { background: #b52218; }
-.search-box button:active { transform: scale(.97); }
+.search-form button:hover  { background: #b52218; }
+.search-form button:active { transform: scale(.97); }
 
 .examples {
   margin-top: .9rem;
@@ -367,11 +401,16 @@ footer p + p { margin-top: .3rem; }
 @media (max-width: 520px) {
   header h1 { font-size: 1.4rem; }
 
-  .search-box { flex-direction: column; }
+  .search-grid { grid-template-columns: 1fr; }
 
   .result-card { flex-direction: column; }
 
   .plate-display { font-size: 1.2rem; min-width: 180px; }
 
   .format-box { justify-content: center; }
+
+  .search-form button {
+    width: 100%;
+    align-self: stretch;
+  }
 }

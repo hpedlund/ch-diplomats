@@ -27,26 +27,57 @@
         <span id="plate-text">BE CD _ ___</span>
       </div>
 
-      <div class="search-box">
-        <label for="plate-input" class="sr-only">Diplomatic plate number</label>
-        <input
-          type="text"
-          id="plate-input"
-          placeholder="e.g. BE CD 1 15"
-          autocomplete="off"
-          autocorrect="off"
-          autocapitalize="characters"
-          spellcheck="false"
-          aria-label="Diplomatic plate number"
-        />
-        <button id="search-btn" aria-label="Look up plate">Look Up</button>
-      </div>
+      <p class="search-intro">Build the plate step by step and check the live preview before you look it up.</p>
+
+      <form class="search-form" id="search-form">
+        <div class="search-grid">
+          <div class="field-group">
+            <label for="canton-select">Canton</label>
+            <select id="canton-select" aria-label="Canton">
+              <option value="BE" selected>BE — Bern</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="corps-select">Corps code</label>
+            <select id="corps-select" aria-label="Corps code"></select>
+          </div>
+
+          <div class="field-group">
+            <label for="status-input">Status number</label>
+            <input
+              type="text"
+              id="status-input"
+              inputmode="numeric"
+              autocomplete="off"
+              placeholder="e.g. 1"
+              aria-describedby="status-hint"
+            />
+            <p class="field-hint" id="status-hint"></p>
+          </div>
+
+          <div class="field-group">
+            <label for="code-input" id="code-label">Country / org code</label>
+            <input
+              type="text"
+              id="code-input"
+              inputmode="numeric"
+              autocomplete="off"
+              placeholder="e.g. 15"
+              aria-describedby="code-hint"
+            />
+            <p class="field-hint" id="code-hint"></p>
+          </div>
+        </div>
+
+        <button type="submit" id="search-btn" aria-label="Look up plate">Look Up</button>
+      </form>
 
       <div class="examples">
         Try:
-        <a href="#" class="example-link" data-plate="BE CD 1 15">BE CD 1 15</a>,
-        <a href="#" class="example-link" data-plate="BE CC 2 45">BE CC 2 45</a>,
-        <a href="#" class="example-link" data-plate="BE IO 1 3">BE IO 1 3</a>
+        <a href="#" class="example-link" data-canton="BE" data-corps="CD" data-status="1" data-code="15">BE CD 1 15</a>,
+        <a href="#" class="example-link" data-canton="BE" data-corps="CC" data-status="2" data-code="45">BE CC 2 45</a>,
+        <a href="#" class="example-link" data-canton="BE" data-corps="IO" data-status="1" data-code="3">BE IO 1 3</a>
       </div>
     </section>
 

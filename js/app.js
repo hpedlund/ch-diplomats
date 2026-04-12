@@ -1,58 +1,72 @@
 // Swiss Diplomatic Plate Lookup – Application Logic
 
 (function () {
-  const input    = document.getElementById('plate-input');
-  const searchBtn = document.getElementById('search-btn');
-  const preview  = document.getElementById('plate-text');
+  const cantonSelect = document.getElementById('canton-select');
+  const corpsSelect = document.getElementById('corps-select');
+  const statusInput = document.getElementById('status-input');
+  const codeInput = document.getElementById('code-input');
+  const codeLabel = document.getElementById('code-label');
+  const statusHint = document.getElementById('status-hint');
+  const codeHint = document.getElementById('code-hint');
+  const searchForm = document.getElementById('search-form');
+  const preview = document.getElementById('plate-text');
   const resultSection = document.getElementById('result-section');
-  const errorSection  = document.getElementById('error-section');
-  const errorMsg      = document.getElementById('error-message');
+  const errorSection = document.getElementById('error-section');
+  const errorMsg = document.getElementById('error-message');
 
-  // ── Parsing ────────────────────────────────────────────────────────────────
+  function populateCorpsOptions() {
+    const options = Object.entries(CORPS_CODES)
+      .map(([code, label]) => `<option value="${code}">${code} — ${label}</option>`)
+      .join('');
 
-  /**
-   * Normalise free-form input and extract plate components.
-   * Accepted formats (case-insensitive, separators: space / dash / slash):
-   *   BE CD 1 15  |  CD 1 15  |  cd 1 15  |  BE-CD-1-15  |  BECD115
-   * Returns { corps, status, code } or { error } on failure.
-   */
-  function parsePlate(raw) {
-    // Normalise to upper-case, collapse separators to single space
-    let s = raw.toUpperCase().trim().replace(/[-/]+/g, ' ').replace(/\s+/g, ' ');
-
-    // Strip leading canton token (BE, GE, ZH …) – diplomatic plates are always BE
-    s = s.replace(/^[A-Z]{2}\s+/, '');
-
-    // Attempt compact format without spaces: CDNNN or CDN NNN
-    // e.g. "CD115" → "CD 1 15" is ambiguous without separators; skip compact for now
-    const parts = s.split(' ');
-
-    if (parts.length < 3) {
-      return { error: 'Please enter a complete plate, e.g. "BE CD 1 15".' };
-    }
-    if (parts.length > 3) {
-      return { error: 'Too many parts. Expected format: "BE CD 1 15" (canton · corps · status · country).' };
-    }
-
-    const corps = parts[0];
-    if (!CORPS_CODES[corps]) {
-      return { error: `Unknown corps code "${corps}". Valid codes: ${Object.keys(CORPS_CODES).join(', ')}.` };
-    }
-
-    const status = parseInt(parts[1], 10);
-    const code   = parseInt(parts[2], 10);
-
-    if (isNaN(status) || status < 1) {
-      return { error: 'Status must be a positive number (e.g. 1 = Ambassador).' };
-    }
-    if (isNaN(code) || code < 1) {
-      return { error: 'Country/organisation code must be a positive number.' };
-    }
-
-    return { corps, status, code };
+    corpsSelect.innerHTML = options;
+    corpsSelect.value = 'CD';
   }
 
-  // ── Lookup ─────────────────────────────────────────────────────────────────
+  function sanitizeNumberInput(input) {
+    input.value = input.value.replace(/\D+/g, '');
+  }
+
+  function getCodeLabel(corps) {
+    return corps === 'IO' ? 'Organisation code' : 'Country code';
+  }
+
+  function getCodeHint(corps) {
+    return corps === 'IO'
+      ? `Valid organisation codes: 1-${Object.keys(IO_CODES).length}.`
+      : `Valid country codes: 1-${Object.keys(COUNTRY_CODES).length}.`;
+  }
+
+  function getStatusHint(corps) {
+    const statuses = Object.keys(STATUS_CODES[corps] || {}).map(Number).sort(function (a, b) {
+      return a - b;
+    });
+
+    if (!statuses.length) {
+      return 'No status codes available.';
+    }
+
+    return `Valid status codes: ${statuses.join(', ')}.`;
+  }
+
+  function syncFieldHints() {
+    const corps = corpsSelect.value;
+    const codeType = getCodeLabel(corps);
+
+    codeLabel.textContent = codeType;
+    codeInput.placeholder = corps === 'IO' ? 'e.g. 3' : 'e.g. 15';
+    statusHint.textContent = getStatusHint(corps);
+    codeHint.textContent = getCodeHint(corps);
+  }
+
+  function updatePreview() {
+    const canton = cantonSelect.value || 'BE';
+    const corps = corpsSelect.value || 'CD';
+    const status = statusInput.value || '_';
+    const code = codeInput.value || '___';
+
+    preview.textContent = `${canton} ${corps} ${status} ${code}`;
+  }
 
   function lookup(corps, status, code) {
     const corpsFull = CORPS_CODES[corps];
@@ -63,67 +77,89 @@
       return { error: `Unknown status code "${status}" for corps "${corps}".` };
     }
 
-    let entityLabel, entityFull;
+    let entityFull;
     if (corps === 'IO') {
       entityFull = IO_CODES[code];
-      entityLabel = `IO Organisation #${code}`;
-      if (!entityFull) return { error: `Unknown IO organisation code "${code}". Valid range: 1–${Object.keys(IO_CODES).length}.` };
+      if (!entityFull) {
+        return { error: `Unknown IO organisation code "${code}". Valid range: 1-${Object.keys(IO_CODES).length}.` };
+      }
     } else {
       entityFull = COUNTRY_CODES[code];
-      entityLabel = `Country #${code}`;
-      if (!entityFull) return { error: `Unknown country code "${code}". Valid range: 1–${Object.keys(COUNTRY_CODES).length}.` };
+      if (!entityFull) {
+        return { error: `Unknown country code "${code}". Valid range: 1-${Object.keys(COUNTRY_CODES).length}.` };
+      }
     }
 
-    return { corpsFull, statusLabel, entityFull, entityLabel };
+    return { corpsFull, statusLabel, entityFull };
   }
 
-  // ── Display ────────────────────────────────────────────────────────────────
+  function showResult(data) {
+    document.getElementById('result-country').textContent = data.entityFull;
+    document.getElementById('result-corps').textContent = data.corps;
+    document.getElementById('result-status').textContent = data.statusLabel;
 
-  function showResult({ corps, status, code, corpsFull, statusLabel, entityFull }) {
-    document.getElementById('result-country').textContent = entityFull;
-    document.getElementById('result-corps').textContent   = corps;
-    document.getElementById('result-status').textContent  = statusLabel;
-
-    document.getElementById('result-canton').textContent        = 'BE (Bern)';
-    document.getElementById('result-corps-detail').textContent  = `${corps} – ${corpsFull}`;
-    document.getElementById('result-status-detail').textContent = `${status} – ${statusLabel}`;
-    document.getElementById('result-country-detail').textContent = `${code} – ${entityFull}`;
+    document.getElementById('result-canton').textContent = `${data.canton} (Bern)`;
+    document.getElementById('result-corps-detail').textContent = `${data.corps} – ${data.corpsFull}`;
+    document.getElementById('result-status-detail').textContent = `${data.status} – ${data.statusLabel}`;
+    document.getElementById('result-country-detail').textContent = `${data.code} – ${data.entityFull}`;
 
     resultSection.hidden = false;
-    errorSection.hidden  = true;
-
-    // Scroll result into view smoothly
+    errorSection.hidden = true;
     resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
   function showError(message) {
-    errorMsg.textContent    = message;
-    errorSection.hidden     = false;
-    resultSection.hidden    = true;
+    errorMsg.textContent = message;
+    errorSection.hidden = false;
+    resultSection.hidden = true;
   }
 
   function clearResults() {
     resultSection.hidden = true;
-    errorSection.hidden  = true;
+    errorSection.hidden = true;
   }
 
-  // ── Plate preview ──────────────────────────────────────────────────────────
-
-  function updatePreview(value) {
-    const cleaned = value.toUpperCase().trim() || 'BE CD _ ___';
-    preview.textContent = cleaned.startsWith('BE') ? cleaned : 'BE ' + cleaned;
+  function getFormValues() {
+    return {
+      canton: cantonSelect.value,
+      corps: corpsSelect.value,
+      status: parseInt(statusInput.value, 10),
+      code: parseInt(codeInput.value, 10),
+    };
   }
 
-  // ── Event wiring ───────────────────────────────────────────────────────────
+  function validateForm() {
+    const { canton, corps, status, code } = getFormValues();
 
-  function handleSearch() {
-    const raw = input.value.trim();
-    if (!raw) {
-      showError('Please enter a diplomatic plate number.');
-      return;
+    if (!canton) {
+      return { error: 'Please choose a canton.' };
     }
 
-    const parsed = parsePlate(raw);
+    if (canton !== 'BE') {
+      return { error: 'Swiss diplomatic plates are issued in the canton of Bern (BE).' };
+    }
+
+    if (!corps) {
+      return { error: 'Please choose a corps code.' };
+    }
+
+    if (Number.isNaN(status) || status < 1) {
+      return { error: 'Please enter a valid positive status number.' };
+    }
+
+    if (Number.isNaN(code) || code < 1) {
+      return { error: `Please enter a valid positive ${getCodeLabel(corps).toLowerCase()}.` };
+    }
+
+    return { canton, corps, status, code };
+  }
+
+  function handleSearch(event) {
+    if (event) {
+      event.preventDefault();
+    }
+
+    const parsed = validateForm();
     if (parsed.error) {
       showError(parsed.error);
       return;
@@ -138,27 +174,47 @@
     showResult({ ...parsed, ...result });
   }
 
-  searchBtn.addEventListener('click', handleSearch);
+  function syncUI() {
+    syncFieldHints();
+    updatePreview();
+  }
 
-  input.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') handleSearch();
-  });
-
-  input.addEventListener('input', function () {
+  function populateExample(example) {
+    cantonSelect.value = example.dataset.canton || 'BE';
+    corpsSelect.value = example.dataset.corps || 'CD';
+    statusInput.value = example.dataset.status || '';
+    codeInput.value = example.dataset.code || '';
     clearResults();
-    updatePreview(this.value);
-  });
+    syncUI();
+    handleSearch();
+  }
 
-  // Example links
-  document.querySelectorAll('.example-link').forEach(function (link) {
-    link.addEventListener('click', function (e) {
-      e.preventDefault();
-      input.value = this.dataset.plate;
-      updatePreview(this.dataset.plate);
-      handleSearch();
+  populateCorpsOptions();
+  syncUI();
+
+  searchForm.addEventListener('submit', handleSearch);
+
+  [statusInput, codeInput].forEach(function (input) {
+    input.addEventListener('input', function () {
+      sanitizeNumberInput(input);
+      clearResults();
+      updatePreview();
     });
   });
 
-  // Autofocus
-  input.focus();
+  [cantonSelect, corpsSelect].forEach(function (input) {
+    input.addEventListener('change', function () {
+      clearResults();
+      syncUI();
+    });
+  });
+
+  document.querySelectorAll('.example-link').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      event.preventDefault();
+      populateExample(link);
+    });
+  });
+
+  statusInput.focus();
 })();
