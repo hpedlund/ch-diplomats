@@ -16,7 +16,7 @@
 
   function populateCorpsOptions() {
     const options = Object.entries(CORPS_CODES)
-      .map(([code, label]) => `<option value="${code}">${code} — ${label}</option>`)
+      .map(([code]) => `<option value="${code}">${code}</option>`)
       .join('');
 
     corpsSelect.innerHTML = options;
@@ -43,10 +43,14 @@
     });
 
     if (!statuses.length) {
-      return 'No status codes available.';
+      return 'Enter any positive status number.';
     }
 
-    return `Valid status codes: ${statuses.join(', ')}.`;
+    return `Common codes: ${statuses.join(', ')}. Higher staff numbers are allowed.`;
+  }
+
+  function getStatusLabel(corps, status) {
+    return (STATUS_CODES[corps] || {})[status] || `Status code ${status}`;
   }
 
   function syncFieldHints() {
@@ -72,10 +76,7 @@
     const corpsFull = CORPS_CODES[corps];
     if (!corpsFull) return { error: `Unknown corps code "${corps}".` };
 
-    const statusLabel = (STATUS_CODES[corps] || {})[status];
-    if (!statusLabel) {
-      return { error: `Unknown status code "${status}" for corps "${corps}".` };
-    }
+    const statusLabel = getStatusLabel(corps, status);
 
     let entityFull;
     if (corps === 'IO') {
