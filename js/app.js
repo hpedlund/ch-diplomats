@@ -30,6 +30,9 @@
     if (parts.length < 3) {
       return { error: 'Please enter a complete plate, e.g. "BE CD 1 15".' };
     }
+    if (parts.length > 3) {
+      return { error: 'Too many parts. Expected format: "BE CD 1 15" (canton · corps · status · country).' };
+    }
 
     const corps = parts[0];
     if (!CORPS_CODES[corps]) {
@@ -107,7 +110,7 @@
   // ── Plate preview ──────────────────────────────────────────────────────────
 
   function updatePreview(value) {
-    const cleaned = value.toUpperCase().trim() || 'BE CD _ __';
+    const cleaned = value.toUpperCase().trim() || 'BE CD _ ___';
     preview.textContent = cleaned.startsWith('BE') ? cleaned : 'BE ' + cleaned;
   }
 
