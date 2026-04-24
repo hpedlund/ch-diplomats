@@ -1,16 +1,27 @@
 // Swiss Diplomatic Plate Lookup – Application Logic
 
 (function () {
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js').catch(function () {
+        return null;
+      });
+    });
+  }
+
   const cantonSelect = document.getElementById('canton-select');
   const corpsSelect = document.getElementById('corps-select');
   const statusInput = document.getElementById('status-input');
   const codeInput = document.getElementById('code-input');
   const codeLabel = document.getElementById('code-label');
+  const recentLookups = document.getElementById('recent-lookups');
+  const recentLookupsList = document.getElementById('recent-lookups-list');
   const searchForm = document.getElementById('search-form');
   const preview = document.getElementById('plate-text');
   const resultSection = document.getElementById('result-section');
   const errorSection = document.getElementById('error-section');
   const errorMsg = document.getElementById('error-message');
+  const recentStorageKey = 'ch-diplomats-recent-lookups';
 
   function populateCorpsOptions() {
     const options = Object.entries(CORPS_CODES)
@@ -23,6 +34,72 @@
 
   function sanitizeNumberInput(input) {
     input.value = input.value.replace(/\D+/g, '');
+  }
+
+  function parsePlate(rawValue) {
+    const normalized = rawValue
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, ' ')
+      .trim();
+
+    if (!normalized) {
+      return null;
+    }
+
+    const parts = normalized.split(/\s+/);
+    if (parts.length !== 4) {
+      return { error: 'Use the format BE CD 1 15.' };
+    }
+
+    const [canton, corps, statusText, codeText] = parts;
+    const status = parseInt(statusText, 10);
+    const code = parseInt(codeText, 10);
+
+    if (!canton || !corps || Number.isNaN(status) || Number.isNaN(code)) {
+      return { error: 'Use the format BE CD 1 15.' };
+    }
+
+    return { canton, corps, status, code };
+  }
+
+  function syncStructuredFields(parsedPlate) {
+    cantonSelect.value = parsedPlate.canton;
+    corpsSelect.value = parsedPlate.corps;
+    statusInput.value = String(parsedPlate.status);
+    codeInput.value = String(parsedPlate.code);
+    syncUI();
+  }
+
+  function getRecentLookups() {
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(recentStorageKey) || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveRecentLookup(lookupData) {
+    const plate = `${lookupData.canton} ${lookupData.corps} ${lookupData.status} ${lookupData.code}`;
+    const nextEntries = [
+      plate,
+      ...getRecentLookups().filter(function (entry) {
+        return entry !== plate;
+      }),
+    ].slice(0, 5);
+
+    window.localStorage.setItem(recentStorageKey, JSON.stringify(nextEntries));
+    renderRecentLookups();
+  }
+
+  function renderRecentLookups() {
+    const entries = getRecentLookups();
+    recentLookups.hidden = entries.length === 0;
+    recentLookupsList.innerHTML = entries
+      .map(function (entry) {
+        return `<button type="button" class="recent-chip" data-plate="${entry}">${entry}</button>`;
+      })
+      .join('');
   }
 
   function getCodeLabel(corps) {
@@ -92,6 +169,7 @@
 
     resultSection.hidden = false;
     errorSection.hidden = true;
+    saveRecentLookup(data);
     resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
@@ -167,16 +245,18 @@
   }
 
   function populateExample(example) {
-    cantonSelect.value = example.dataset.canton || 'BE';
-    corpsSelect.value = example.dataset.corps || 'CD';
-    statusInput.value = example.dataset.status || '';
-    codeInput.value = example.dataset.code || '';
+    syncStructuredFields({
+      canton: example.dataset.canton || 'BE',
+      corps: example.dataset.corps || 'CD',
+      status: example.dataset.status || '',
+      code: example.dataset.code || '',
+    });
     clearResults();
-    syncUI();
     handleSearch();
   }
 
   populateCorpsOptions();
+  renderRecentLookups();
   syncUI();
 
   searchForm.addEventListener('submit', handleSearch);
@@ -201,6 +281,22 @@
       event.preventDefault();
       populateExample(link);
     });
+  });
+
+  recentLookupsList.addEventListener('click', function (event) {
+    const chip = event.target.closest('.recent-chip');
+    if (!chip) {
+      return;
+    }
+
+    const parsedPlate = parsePlate(chip.dataset.plate || '');
+    if (!parsedPlate || parsedPlate.error) {
+      return;
+    }
+
+    syncStructuredFields(parsedPlate);
+    clearResults();
+    handleSearch();
   });
 
   statusInput.focus();

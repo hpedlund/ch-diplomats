@@ -6,9 +6,10 @@
   <meta name="description" content="Look up Swiss diplomatic license plates – find the country and status of any BE CD / CC / IO plate." />
   <meta name="application-name" content="CH Diplomats" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="CH Diplomats" />
   <meta name="theme-color" content="#D52B1E" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <title>Swiss Diplomatic Plate Lookup</title>
   <link rel="manifest" href="site.webmanifest" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -36,6 +37,11 @@
       </div>
 
       <form class="search-form" id="search-form">
+        <div class="recent-lookups" id="recent-lookups" aria-label="Recent lookups" hidden>
+          <p class="recent-lookups-title">Recent</p>
+          <div class="recent-lookups-list" id="recent-lookups-list"></div>
+        </div>
+
         <div class="search-grid">
           <div class="field-group">
             <label for="canton-select">Canton</label>
@@ -155,6 +161,23 @@
         </table>
       </div>
     </section>
+
+    <aside class="install-tip" aria-label="Install app">
+      <p class="install-tip-eyebrow">Install the app</p>
+      <h3>Add to Home Screen</h3>
+      <p class="install-tip-intro">Save CH Diplomats to your home screen for faster access and a cleaner app-like view.</p>
+
+      <div class="install-steps">
+        <div class="install-step">
+          <span class="install-badge">Android</span>
+          <p>Open the browser menu and use <strong>Install app</strong> or <strong>Add to Home screen</strong>.</p>
+        </div>
+        <div class="install-step">
+          <span class="install-badge">iPhone / iPad</span>
+          <p>Open the site in <strong>Safari</strong>, tap <strong>Share</strong>, then choose <strong>Add to Home Screen</strong>.</p>
+        </div>
+      </div>
+    </aside>
 
   </main>
 

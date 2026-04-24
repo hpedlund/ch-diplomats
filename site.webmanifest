@@ -1,20 +1,27 @@
 {
+  "id": "/",
   "name": "CH Diplomats",
   "short_name": "CH Diplomats",
-  "description": "Look up Swiss diplomatic licence plates by canton, corps, status, and country or organisation code.",
+  "description": "Fast lookup for Swiss diplomatic plates by corps, status, and country or organisation code.",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#f5f5f5",
   "theme_color": "#D52B1E",
+  "categories": ["utilities", "reference"],
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
